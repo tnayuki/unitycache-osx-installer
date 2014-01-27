@@ -1,13 +1,31 @@
 #!/bin/bash
 
-UNITYCACHE_URL=http://netstorage.unity3d.com/unity/CacheServer-4.3.3.zip
+VERSION=4.3.3
 
-curl --silent --url ${UNITYCACHE_URL} -o /tmp/CacheServer.zip
-unzip /tmp/CacheServer.zip -d /tmp
+while getopts v: OPT
+do
+  case $OPT in
+    "v" ) VERSION="$OPTARG" ;;
+  esac
+done
+
+UNITYCACHE_URL=http://netstorage.unity3d.com/unity/CacheServer-$VERSION.zip
+UNITYCACHE_TMPDIR=`mktemp -d /tmp/unitycache-osx-installer.XXXXXX`
+
+curl -f --url ${UNITYCACHE_URL} -o $UNITYCACHE_TMPDIR/CacheServer.zip
+
+if [ "$?" -ne 0 ] ; then
+   echo "ERROR: Download failed."
+   exit 1
+fi
+
+unzip $UNITYCACHE_TMPDIR/CacheServer.zip -d $UNITYCACHE_TMPDIR
 
 mkdir -p /Users/Shared/UnityCacheServer/Home /var/log/unitycache
 
-mv /tmp/CacheServer/* /Users/Shared/UnityCacheServer/Home
+mv $UNITYCACHE_TMPDIR/CacheServer/* /Users/Shared/UnityCacheServer/Home
+
+rm -rf $UNITYCACHE_TMPDIR
 
 if dscl . -list /Users/unitycache; then
     echo 'unitycache user already exists'

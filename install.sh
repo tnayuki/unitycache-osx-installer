@@ -7,14 +7,16 @@ fi
 
 UNITYCACHE_TMPDIR=`mktemp -d /tmp/unitycache-osx-installer.XXXXXX`
 
-curl -f --url $1 -o $UNITYCACHE_TMPDIR/CacheServer.zip
+echo 'Downloading Unity Cache Server...'
+curl -s -f --url $1 -o $UNITYCACHE_TMPDIR/CacheServer.zip
 
 if [ "$?" -ne 0 ] ; then
    echo "ERROR: Download failed."
    exit 1
 fi
 
-unzip $UNITYCACHE_TMPDIR/CacheServer.zip -d $UNITYCACHE_TMPDIR
+echo 'Installing Unity Cache Server...'
+unzip -q $UNITYCACHE_TMPDIR/CacheServer.zip -d $UNITYCACHE_TMPDIR
 
 mkdir -p /Library/UnityCacheServer /var/log/unitycache
 
@@ -22,7 +24,7 @@ mv $UNITYCACHE_TMPDIR/CacheServer/* /Library/UnityCacheServer
 
 rm -rf $UNITYCACHE_TMPDIR
 
-if dscl . -list /Users/unitycache; then
+if dscl . -list /Users/unitycache 2>/dev/null 1>/dev/null; then
     echo 'unitycache user already exists'
 else
     uid=$(dscl . -list /Users uid | sort -nrk 2 | awk '$2 < 500 {print $2 + 1; exit 0}')
@@ -30,17 +32,17 @@ else
         echo 'ERROR: All system uids are in use!'
         exit 1
     fi
-    echo "Using uid $uid for Unity Cache Server"
 
 	gid=$uid
     while dscl -search /Groups gid $gid | grep -q $gid; do
         echo "gid $gid is not free, trying next"
         gid=$(($gid + 1))
     done
-    echo "Using gid $gid for Unity Cache Server"
 
+    echo "Creating group for Unity Cache Server..."
 	dscl . -create /Groups/unitycache PrimaryGroupID $gid
 
+    echo "Creating user for Unity Cache Server..."
 	dscl . -create /Users/unitycache FullName "Unity Cache Server"
     dscl . -create /Users/unitycache UserShell /bin/bash
     dscl . -create /Users/unitycache Password '*'
@@ -91,4 +93,5 @@ cat > /Library/LaunchDaemons/com.unity3d.cacheserver.plist <<EOF
 </plist>
 EOF
 
+echo "Starting Unity Cache Server..."
 launchctl load /Library/LaunchDaemons/com.unity3d.cacheserver.plist

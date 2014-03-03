@@ -21,9 +21,9 @@ fi
 
 unzip $UNITYCACHE_TMPDIR/CacheServer.zip -d $UNITYCACHE_TMPDIR
 
-mkdir -p /Users/Shared/UnityCacheServer/Home /var/log/unitycache
+mkdir -p /Library/UnityCacheServer /var/log/unitycache
 
-mv $UNITYCACHE_TMPDIR/CacheServer/* /Users/Shared/UnityCacheServer/Home
+mv $UNITYCACHE_TMPDIR/CacheServer/* /Library/UnityCacheServer
 
 rm -rf $UNITYCACHE_TMPDIR
 
@@ -51,12 +51,12 @@ else
     dscl . -create /Users/unitycache Password '*'
     dscl . -create /Users/unitycache UniqueID $uid
     dscl . -create /Users/unitycache PrimaryGroupID $gid
-    dscl . -create /Users/unitycache NFSHomeDirectory /Users/Shared/UnityCacheServer
+    dscl . -create /Users/unitycache NFSHomeDirectory /Library/UnityCacheServer
 
     dscl . -append /Groups/unitycache GroupMembership unitycache
 fi
 
-chown -R unitycache:unitycache /Users/Shared/UnityCacheServer /var/log/unitycache
+chown -R unitycache:unitycache /Library/UnityCacheServer /var/log/unitycache
 
 cat > /Library/LaunchDaemons/com.unity3d.cacheserver.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -67,11 +67,13 @@ cat > /Library/LaunchDaemons/com.unity3d.cacheserver.plist <<EOF
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/Shared/UnityCacheServer/Home/RunOSX.command</string>
+        <string>/Library/UnityCacheServer/RunOSX.command</string>
+        <string>--path</string>
+        <string>/Library/Caches/com.unity3d.cacheserver</string>
     </array>
 
     <key>WorkingDirectory</key>
-	<string>/Users/Shared/UnityCacheServer/Home</string>
+	<string>/Library/UnityCacheServer</string>
 
     <key>RunAtLoad</key>
     <true />

@@ -1,18 +1,13 @@
 #!/bin/bash
 
-VERSION=4.3.3
+if [ $# -ne 1 ]; then
+  echo "ERROR: URL not specified."
+  exit 1
+fi
 
-while getopts v: OPT
-do
-  case $OPT in
-    "v" ) VERSION="$OPTARG" ;;
-  esac
-done
-
-UNITYCACHE_URL=http://netstorage.unity3d.com/unity/CacheServer-$VERSION.zip
 UNITYCACHE_TMPDIR=`mktemp -d /tmp/unitycache-osx-installer.XXXXXX`
 
-curl -f --url ${UNITYCACHE_URL} -o $UNITYCACHE_TMPDIR/CacheServer.zip
+curl -f --url $1 -o $UNITYCACHE_TMPDIR/CacheServer.zip
 
 if [ "$?" -ne 0 ] ; then
    echo "ERROR: Download failed."
